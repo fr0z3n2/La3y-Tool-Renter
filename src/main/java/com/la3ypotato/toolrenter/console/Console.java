@@ -1,5 +1,10 @@
 package com.la3ypotato.toolrenter.console;
 
+import com.la3ypotato.toolrenter.tool.Tool;
+import com.la3ypotato.toolrenter.tool.Tools;
+
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
 
@@ -29,6 +34,7 @@ public class Console {
     // Class properties
     private boolean consoleExited = true;
     private String errorMsg = "";
+    private Map<String, Tool> availableTools = new HashMap<>();
 
     // Class constructor that
     public Console() {
@@ -38,20 +44,25 @@ public class Console {
     // Shows the tool renter logo
     private void printMenuHeader() {
         System.out.println(WELCOME_MSG);
-        System.out.println(" ______          _____           __        ");
+        System.out.println(" ______          _____           __");
         System.out.println("/_  __/__  ___  / / _ \\___ ___  / /____ ____");
         System.out.println(" / / / _ \\/ _ \\/ / , _/ -_) _ \\/ __/ -_) __/");
-        System.out.println("/_/  \\___/\\___/_/_/|_|\\__/_//_/\\__/\\__/_/   \n");
+        System.out.println("/_/  \\___/\\___/_/_/|_|\\__/_//_/\\__/\\__/_/\n");
     }
 
     private void printCheckoutMenuHeader() {
-        System.out.println(" ______          _____           __          ");
-        System.out.println("/_  __/__  ___  / / _ \\___ ___  / /____ ____   ");
-        System.out.println(" / / / _ \\/ _ \\/ / , _/ -_) _ \\/ __/ -_) __/   ");
-        System.out.println("/_/__\\___/\\___/_/_/|_|\\__/_//_/\\__/\\__/_/      ");
-        System.out.println(" / ___/ /  ___ ____/ /_____  __ __/ /_         ");
-        System.out.println("/ /__/ _ \\/ -_) __/  '_/ _ \\/ // / __/         ");
-        System.out.println("\\___/_//_/\\__/\\__/_/\\_\\\\___/\\_,_/\\__/          \n");
+        System.out.println(" ______          _____           __");
+        System.out.println("/_  __/__  ___  / / _ \\___ ___  / /____ ____");
+        System.out.println(" / / / _ \\/ _ \\/ / , _/ -_) _ \\/ __/ -_) __/");
+        System.out.println("/_/__\\___/\\___/_/_/|_|\\__/_//_/\\__/\\__/_/");
+        System.out.println(" / ___/ /  ___ ____/ /_____  __ __/ /_");
+        System.out.println("/ /__/ _ \\/ -_) __/  '_/ _ \\/ // / __/");
+        System.out.println("\\___/_//_/\\__/\\__/_/\\_\\\\___/\\_,_/\\__/\n");
+    }
+
+    private void initializeTools() {
+        Tools tools = new Tools();
+        availableTools = tools.getAvailableTools();
     }
 
     // Clears the command line
@@ -83,8 +94,7 @@ public class Console {
 
     private void showCheckoutMenu() {
         printCheckoutMenuHeader();
-        System.out.println(CHECKOUT_MENU_GUIDANCE_MSG);
-        // TODO: Load tools
+        System.out.println(CHECKOUT_MENU_GUIDANCE_MSG + "\n");
     }
 
     // When called, requests user input.
@@ -110,16 +120,20 @@ public class Console {
             // Displaying prompts and requesting for input.
             System.out.println(CHECKOUT_PROMPT_1);
             String line = scanner.nextLine();
+            handleCheckoutMenuInput(CHECKOUT_OPTION_1, line);
             System.out.println("\n" + CHECKOUT_PROMPT_2);
             line = scanner.nextLine();
+            handleCheckoutMenuInput(CHECKOUT_OPTION_2, line);
             System.out.println("\n" + CHECKOUT_PROMPT_3);
             line = scanner.nextLine();
+            handleCheckoutMenuInput(CHECKOUT_OPTION_3, line);
             System.out.println("\n" + CHECKOUT_PROMPT_4);
             line = scanner.nextLine();
+            handleCheckoutMenuInput(CHECKOUT_OPTION_4, line);
+            // TODO: Generate a report if the data is correct.
         } catch (IllegalStateException | NoSuchElementException e) {
             exitApp();
         }
-
     }
 
     // Validates the user input and handles it based on the passed option.
@@ -141,13 +155,16 @@ public class Console {
     private void handleCheckoutMenuInput(int option, String userInput) {
         switch(option) {
             case CHECKOUT_OPTION_1:
-                // TODO: Validate input to see if the tools are present
+                // TODO: Validate input and check if the tools are present in the available tools.
                 break;
             case CHECKOUT_OPTION_2:
+                // TODO: Validate input is a non-zero number
                 break;
             case CHECKOUT_OPTION_3:
+                // TODO: Validate input is between 0 and 100
                 break;
             case CHECKOUT_OPTION_4:
+                // TODO: Validate input is a valid date.
                 break;
             default:
                 break;
@@ -168,6 +185,7 @@ public class Console {
     // Starts the app loop.
     public void startConsole() {
         clearConsole();
+        initializeTools();
         startMainMenu();
     }
 }
