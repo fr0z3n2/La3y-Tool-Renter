@@ -52,7 +52,7 @@ public class Tools {
         return retToolMap;
     }
 
-    private Tool createTool(String ...toolInfo) throws IllegalArgumentException {
+    public Tool createTool(String ...toolInfo) throws IllegalArgumentException {
         if (toolInfo.length != EXPECTED_TOOL_ARGS) {
             throw new IllegalArgumentException("Incorrect number of tool parameters!\n" +
                                                "Expected: " + EXPECTED_TOOL_ARGS + "\n" +
