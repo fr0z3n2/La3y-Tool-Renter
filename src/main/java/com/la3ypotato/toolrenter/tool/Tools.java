@@ -6,17 +6,31 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Tools {
+    // Singleton class instance
+    private static Tools toolsInstance;
+    // Class properties
     private final int EXPECTED_TOOL_ARGS = 7;
     private final String FILE_DELIMITER= ",";
     private String resourceCSVFile = "/tools.csv";
     private Map<String, Tool> availableTools;
 
-    public Tools() {
-        availableTools = new HashMap<>();
+    private Tools() {
+        // Load the tools when this singleton instance is initialized.
+        availableTools = loadTools();
+    }
+
+    // Returns the singleton instance.
+    public static Tools getInstance() {
+        if (toolsInstance == null) {
+            toolsInstance = new Tools();
+        }
+
+        return toolsInstance;
     }
 
     // Loads the tools from the packaged CSV file.
-    private void loadTools() {
+    private Map<String, Tool> loadTools() {
+        Map<String, Tool> retToolMap = new HashMap<>();
         try {
             InputStream in = getClass().getResourceAsStream(resourceCSVFile);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -25,7 +39,7 @@ public class Tools {
             while ( (line = br.readLine()) != null ) {
                 String[] toolInfo = line.split(FILE_DELIMITER);
                 Tool createdTool = createTool(toolInfo);
-                availableTools.put(createdTool.toolCode, createdTool);
+                retToolMap.put(createdTool.toolCode, createdTool);
             }
             // Closing the BufferedReader.
             br.close();
@@ -34,6 +48,8 @@ public class Tools {
         } catch (IOException | IllegalArgumentException e) {
             e.printStackTrace();
         }
+
+        return retToolMap;
     }
 
     private Tool createTool(String ...toolInfo) throws IllegalArgumentException {
@@ -63,7 +79,6 @@ public class Tools {
     }
 
     public Map<String, Tool> getAvailableTools() {
-        loadTools();
         return availableTools;
     }
 }

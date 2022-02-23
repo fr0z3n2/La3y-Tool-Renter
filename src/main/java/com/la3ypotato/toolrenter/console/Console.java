@@ -1,12 +1,8 @@
 package com.la3ypotato.toolrenter.console;
 
-import com.la3ypotato.toolrenter.tool.Tool;
-import com.la3ypotato.toolrenter.tool.Tools;
+import com.la3ypotato.toolrenter.rentalagreement.RentalAgreement;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Scanner;
+import java.util.*;
 
 public class Console {
     // UI Messages
@@ -17,6 +13,15 @@ public class Console {
     private final String MENU_GUIDANCE_MSG = "Key in an option below to select it, then press Enter.";
     private final String MENU_OPTION_1_TEXT = "1) Checkout a Tool";
     private final String MENU_OPTION_2_TEXT = "2) Exit";
+    // Main Menu Error UI Messages
+    private final String INVALID_TOOL_CODE = "The keyed tool code does not match a tool that is available for rent.";
+    private final String INVALID_RENTAL_DAY = "They keyed number of days is invalid. Please enter a valid " +
+            "integer greater than 0.";
+    private final String INVALID_DISCOUNT = "The keyed discount amount is invalid. Please enter a valid " +
+            "integer between 0 and 100";
+    private final String INVALID_DATE = "The keyed checkout date is invalid. Please enter a valid date. (Ex: " +
+            "08/01/2000)";
+    private final String INVALID_RENTAL_AGREEMENT = "Rental Agreement not complete. Returning to main menu.";
     // Checkout UI Messages
     private final String CHECKOUT_MENU_GUIDANCE_MSG = "Please key in the following information and press enter after" +
                                                       " each prompt.";
@@ -24,17 +29,19 @@ public class Console {
     private final String CHECKOUT_PROMPT_2 = "Enter the number of rental days.";
     private final String CHECKOUT_PROMPT_3 = "Enter the discount percent";
     private final String CHECKOUT_PROMPT_4 = "Enter the checkout date (using mm/dd/yyyy format)";
+    // Rental Agreement UI Messages
+    private final String RENTAL_AGREEMENT_GUIDANCE_MSG = "Please review the printed tool rental agreement below:";
+    private final String RENTAL_AGREEMENT_CONTINUE = "Please press enter to begin the next ToolRenter transaction...";
     // UI OPTIONS
     private final String MENU_OPTION_1 = "1";
     private final String MENU_OPTION_2 = "2";
-    private final int CHECKOUT_OPTION_1 = 1;
-    private final int CHECKOUT_OPTION_2 = 2;
-    private final int CHECKOUT_OPTION_3 = 3;
-    private final int CHECKOUT_OPTION_4 = 4;
+    private final int CHECKOUT_OPTION_1 = 0;
+    private final int CHECKOUT_OPTION_2 = 1;
+    private final int CHECKOUT_OPTION_3 = 2;
+    private final int CHECKOUT_OPTION_4 = 3;
     // Class properties
     private boolean consoleExited = true;
     private String errorMsg = "";
-    private Map<String, Tool> availableTools = new HashMap<>();
 
     // Class constructor that
     public Console() {
@@ -60,11 +67,6 @@ public class Console {
         System.out.println("\\___/_//_/\\__/\\__/_/\\_\\\\___/\\_,_/\\__/\n");
     }
 
-    private void initializeTools() {
-        Tools tools = new Tools();
-        availableTools = tools.getAvailableTools();
-    }
-
     // Clears the command line
     private void clearConsole() {
         try {
@@ -82,7 +84,7 @@ public class Console {
     // Shows the main menu of tool renter.
     private void showMainMenu() {
         printMenuHeader();
-        if (errorMsg != "") {
+        if (!errorMsg.equals("")) {
             System.out.println("!! " + errorMsg + " !!\n");
             errorMsg = "";
         }
@@ -92,9 +94,15 @@ public class Console {
         System.out.println(MENU_OPTION_2_TEXT);
     }
 
+    // Shows the beginning of the checkout menu.
     private void showCheckoutMenu() {
         printCheckoutMenuHeader();
         System.out.println(CHECKOUT_MENU_GUIDANCE_MSG + "\n");
+    }
+
+    private void showRentalAgreementPage() {
+        printCheckoutMenuHeader();
+        System.out.println(RENTAL_AGREEMENT_GUIDANCE_MSG + "\n");
     }
 
     // When called, requests user input.
@@ -112,27 +120,62 @@ public class Console {
         }
     }
 
+    // Starts the checkout menu by showing the menu as well as requesting
+    // for user input.
     private void startCheckoutMenu() {
         Scanner scanner = new Scanner(System.in);
         clearConsole();
         showCheckoutMenu();
+        RentalAgreement rentalAgreement = new RentalAgreement();
         try {
-            // Displaying prompts and requesting for input.
-            System.out.println(CHECKOUT_PROMPT_1);
-            String line = scanner.nextLine();
-            handleCheckoutMenuInput(CHECKOUT_OPTION_1, line);
-            System.out.println("\n" + CHECKOUT_PROMPT_2);
-            line = scanner.nextLine();
-            handleCheckoutMenuInput(CHECKOUT_OPTION_2, line);
-            System.out.println("\n" + CHECKOUT_PROMPT_3);
-            line = scanner.nextLine();
-            handleCheckoutMenuInput(CHECKOUT_OPTION_3, line);
-            System.out.println("\n" + CHECKOUT_PROMPT_4);
-            line = scanner.nextLine();
-            handleCheckoutMenuInput(CHECKOUT_OPTION_4, line);
-            // TODO: Generate a report if the data is correct.
+            String[] checkoutPrompts = {CHECKOUT_PROMPT_1, CHECKOUT_PROMPT_2, CHECKOUT_PROMPT_3, CHECKOUT_PROMPT_4};
+            // Loop through all of the available checkout prompts.
+            for (int i = 0; i < checkoutPrompts.length; i++) {
+                String prompt = checkoutPrompts[i];
+                System.out.println(prompt);
+                String line = scanner.nextLine();
+                // Validate the input against the rental agreement acceptance
+                // criteria.
+                handleCheckoutMenuInput(i, line, rentalAgreement);
+                // Check if we received a validation error from the input.
+                if (!errorMsg.isEmpty()) {
+                    // Do not continue if we received an error in any
+                    // of the prompts.
+                    return;
+                }
+            }
         } catch (IllegalStateException | NoSuchElementException e) {
             exitApp();
+        }
+        startRentalAgreementPage(rentalAgreement);
+    }
+
+    // Starts the rental agreement page by showing the page as well as
+    // finalizing the rental agreement based on previous input and displaying
+    // it back to the user.
+    private void startRentalAgreementPage(RentalAgreement rentalAgreement) {
+        try {
+            rentalAgreement.finalizeRentalAgreement();
+        } catch (IllegalStateException e) {
+            // Return to the main menu if the rental agreement is not complete.
+            errorMsg = INVALID_RENTAL_AGREEMENT;
+            return;
+        }
+
+        clearConsole();
+        showRentalAgreementPage();
+        String displayText = rentalAgreement.toString();
+        System.out.println(displayText);
+
+        try {
+            System.out.println("\n" + RENTAL_AGREEMENT_CONTINUE);
+            Scanner scanner = new Scanner(System.in);
+            // Accept any character to proceed.
+            scanner.nextLine();
+            System.out.println();
+        } catch (IllegalStateException | NoSuchElementException e) {
+            exitApp();
+            return;
         }
     }
 
@@ -152,19 +195,38 @@ public class Console {
         }
     }
 
-    private void handleCheckoutMenuInput(int option, String userInput) {
+    // Handles the user input from the tool checkout menu.
+    private void handleCheckoutMenuInput(int option, String userInput, RentalAgreement currRentalAgreement) {
         switch(option) {
             case CHECKOUT_OPTION_1:
-                // TODO: Validate input and check if the tools are present in the available tools.
+                try {
+                    currRentalAgreement.setTargetTool(userInput);
+                } catch (IllegalArgumentException e) {
+                    errorMsg = INVALID_TOOL_CODE;
+                }
                 break;
             case CHECKOUT_OPTION_2:
-                // TODO: Validate input is a non-zero number
+                try {
+                    currRentalAgreement.setRentalDays(userInput);
+                } catch (IllegalArgumentException e) {
+                    errorMsg = INVALID_RENTAL_DAY;
+                }
                 break;
             case CHECKOUT_OPTION_3:
-                // TODO: Validate input is between 0 and 100
+                // If the user doesn't key anything, assume the value is zero.
+                userInput = userInput.isEmpty() ? "0" : userInput;
+                try {
+                    currRentalAgreement.setDiscount(userInput);
+                } catch (IllegalArgumentException e) {
+                    errorMsg = INVALID_DISCOUNT;
+                }
                 break;
             case CHECKOUT_OPTION_4:
-                // TODO: Validate input is a valid date.
+                try {
+                    currRentalAgreement.setCheckoutDate(userInput);
+                } catch (IllegalArgumentException e) {
+                    errorMsg = INVALID_DATE;
+                }
                 break;
             default:
                 break;
@@ -185,7 +247,6 @@ public class Console {
     // Starts the app loop.
     public void startConsole() {
         clearConsole();
-        initializeTools();
         startMainMenu();
     }
 }
