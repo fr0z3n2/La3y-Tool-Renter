@@ -19,7 +19,7 @@ import java.util.Map;
 public class RentalAgreement {
     // Constants
     private final String INPUT_DATE_FORMAT = "M/d/yyyy";
-    private final String OUTPUT_DATE_FORMAT = "MM/dd/yyyy";
+    private final String OUTPUT_DATE_FORMAT = "MM/dd/yy";
     private final int ROUNDING_PRECISION = 2;
     private final Locale locale = new Locale("en", "US");
     // Must have class properties
@@ -52,8 +52,8 @@ public class RentalAgreement {
         // TODO: Check if the checkout data is after the due date.
         int weekdays = 0;
         int weekendDays = 0;
-        int holidays = 0;
         int chargeDays = 0;
+        int holidays = 0;
         List<LocalDate> holidayList = getHolidays(checkoutDate.getYear(), dueDate.getYear());
 
         // Adding one day to exclude the checkout day as specified in the requirements.
@@ -74,10 +74,15 @@ public class RentalAgreement {
             date = date.plusDays(1);
         }
 
+        // Filter out holidays that land on weekdays. Note, for this application all of the observed holidays (labor day
+        // and 4th of july) land on a weekday. So, deduct from the weekday charges if the holiday charge is set to false.
+        if (!targetTool.holidayCharge) {
+            weekdays = weekdays - holidays;
+        }
+
         // Tally up all of the charge days based on the targetTool settings.
         chargeDays = targetTool.weekdayCharge == true ? chargeDays + weekdays : chargeDays;
         chargeDays = targetTool.weekendCharge == true ? chargeDays + weekendDays : chargeDays;
-        chargeDays = targetTool.holidayCharge == true ? chargeDays + holidays : chargeDays;
 
         return chargeDays;
     }
@@ -107,7 +112,10 @@ public class RentalAgreement {
     }
 
     private double calculateFinalCharge(double preDiscountCharge, double discountAmount) {
-        return preDiscountCharge - discountAmount;
+        BigDecimal pdc = BigDecimal.valueOf(preDiscountCharge);
+        BigDecimal da = BigDecimal.valueOf(discountAmount);
+        BigDecimal result = pdc.subtract(da).setScale(ROUNDING_PRECISION, RoundingMode.HALF_UP);
+        return result.doubleValue();
     }
 
     private List<LocalDate> getHolidays(int startYear, int endYear) {
@@ -139,6 +147,10 @@ public class RentalAgreement {
         }
 
         return julyFourth;
+    }
+
+    public Map<String, Tool> getAvailableToolsForRent() {
+        return availableToolsForRent;
     }
 
     public void setTargetTool(String toolCode) throws IllegalArgumentException {
@@ -210,6 +222,26 @@ public class RentalAgreement {
 
     public void setFinalCharge(double finalCharge) {
         this.finalCharge = finalCharge;
+    }
+
+    public LocalDate getDueDate() {
+        return dueDate;
+    }
+
+    public int getChargeDays() {
+        return chargeDays;
+    }
+
+    public double getPreDiscountAmount() {
+        return preDiscountAmount;
+    }
+
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public double getFinalCharge() {
+        return finalCharge;
     }
 
     public boolean isRentalAgreementComplete() {
