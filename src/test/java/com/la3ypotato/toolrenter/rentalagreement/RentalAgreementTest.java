@@ -5,10 +5,30 @@ import org.junit.jupiter.api.Assertions;
 
 import java.time.LocalDate;
 
+/**
+ * This test class is used to run through the 6 main testing scenarios to validate the logic for the RentalAgreement
+ * class such that the expected results are obtained based on the four main pieces of data.
+ *
+ * Tool Code
+ * Rental Days
+ * Discount Percent
+ * Checkout Date
+ *
+ * @author Logan Stanfield
+ * @version 1.0
+ * @since 02/23/2022
+ */
 public class RentalAgreementTest {
 
     // HELPER METHODS //
 
+    /**
+     * Helper method for validating the tool code against the rental agreement validators.
+     *
+     * @param rentalAgreement - current rental agreement
+     * @param toolCode - test tool code
+     * @param shouldFail - whether or not the test is expecting a failure
+     */
     public void testToolCodeAgainstRentalAgreement(RentalAgreement rentalAgreement, String toolCode, boolean shouldFail) {
         try {
             rentalAgreement.setTargetTool(toolCode);
@@ -16,12 +36,19 @@ public class RentalAgreementTest {
             if (shouldFail) {
                 System.out.println("Passed tool code " + toolCode + " was expected to fail. Passing test!");
             } else {
-                Assertions.fail("The passed target rental tool: " + toolCode + "should be accepted and an exception should" +
+                Assertions.fail("The passed target rental tool: " + toolCode + " should be accepted and an exception should" +
                             " not be thrown. Failing test!");
             }
         }
     }
 
+    /**
+     * Helper method for validating the rental days against the rental agreement validators.
+     *
+     * @param rentalAgreement - current rental agreement
+     * @param rentalDays - test rental days
+     * @param shouldFail - whether or not the test is expecting a failure
+     */
     public void testRentalDaysAgainstRentalAgreement(RentalAgreement rentalAgreement, String rentalDays, boolean shouldFail) {
         try {
             rentalAgreement.setRentalDays(rentalDays);
@@ -35,6 +62,13 @@ public class RentalAgreementTest {
         }
     }
 
+    /**
+     * Helper method for validating the discount against the rental agreement validators.
+     *
+     * @param rentalAgreement - current rental agreement
+     * @param discount - test discount
+     * @param shouldFail - whether or not the test is expecting a failure
+     */
     public void testDiscountAgainstRentalAgreement(RentalAgreement rentalAgreement, String discount, boolean shouldFail) {
         try {
             rentalAgreement.setDiscount(discount);
@@ -48,6 +82,13 @@ public class RentalAgreementTest {
         }
     }
 
+    /**
+     * Helper method for validating the checkout date against the rental agreement validators.
+     *
+     * @param rentalAgreement - current rental agreement
+     * @param checkoutDate - test checkout date
+     * @param shouldFail - whether or not the test is expecting a failure
+     */
     public void testCheckoutDateAgainstRentalAgreement(RentalAgreement rentalAgreement, String checkoutDate, boolean shouldFail) {
         try {
             rentalAgreement.setCheckoutDate(checkoutDate);
@@ -63,16 +104,20 @@ public class RentalAgreementTest {
 
     // TEST METHODS //
 
+    /**
+     * Checks if the available tools for rent have been initialized.
+     */
     @Test
     public void validateAvailableTools() {
         RentalAgreement rentalAgreement = new RentalAgreement();
         if (rentalAgreement.getAvailableToolsForRent().isEmpty()) {
-            Assertions.fail("The loaded rental agreement should not be empty! The available tools failed to load.");
+            Assertions.fail("The loaded rental agreement should not be incomplete! The available tools Map failed to load.");
         }
-
-        // TODO: Add logic to check the content of the tools map.
     }
 
+    /**
+     * Validates that the calculation for Test 1 in the specification is calculating as expected.
+     */
     @Test
     public void validateTest1() {
         RentalAgreement rentalAgreement = new RentalAgreement();
@@ -86,10 +131,13 @@ public class RentalAgreementTest {
         testRentalDaysAgainstRentalAgreement(rentalAgreement, testRentalDays, false);
         // The below test should not fail as this is a valid checkout date.
         testCheckoutDateAgainstRentalAgreement(rentalAgreement, testCheckoutDate, false);
-        // The below test should fail as expected! 101 is out of bounds. No need to perform any further tests.
+        // The below test should fail as expected! 101 is out of bounds for discount. No need to perform any further tests.
         testDiscountAgainstRentalAgreement(rentalAgreement, testDiscount, true);
     }
 
+    /**
+     * Validates that the calculation for Test 2 in the specification is calculating as expected.
+     */
     @Test
     public void validateTest2() {
         RentalAgreement rentalAgreement = new RentalAgreement();
@@ -111,15 +159,19 @@ public class RentalAgreementTest {
         } catch (IllegalStateException e) {
             Assertions.fail("Failing test! The rental agreement has not been completed as expected.");
         }
-
+        // Define the expected values.
+        // Three days after 7/2/2020 is 7/5/2020.
         LocalDate expectedDueDate = LocalDate.of(2020, 7, 5);
         // Only expecting 2 charge days as the 3rd is an observed holiday in 2020 and
         // ladders contain a weekend charge.
         int expectedChargeDays = 2;
+        // Daily charge for ladder is 1.99, so (1.99 * 2) = 3.98
         double expectedPreDiscountCharge = 3.98;
-        // Expecting 0.4 here as (3.98 * .1) = 0.398 is rounded to 0.4
+        // Expecting 0.4 here as (3.98 * .1) = 0.398 is rounded up to 0.4
         double expectedDiscountAmount = 0.4;
+        // Expecting 3.58 here as (3.98 - .4) = 3.58.
         double expectedFinalCharge = 3.58;
+        // Obtain the actual values from the finalized rental agreement.
         LocalDate actualDueDate = rentalAgreement.getDueDate();
         int actualChargeDays = rentalAgreement.getChargeDays();
         double actualPreDiscountCharge = rentalAgreement.getPreDiscountAmount();
@@ -133,6 +185,9 @@ public class RentalAgreementTest {
         Assertions.assertEquals(expectedFinalCharge, actualFinalCharge);
     }
 
+    /**
+     * Validates that the calculation for Test 3 in the specification is calculating as expected.
+     */
     @Test
     public void validateTest3() {
         RentalAgreement rentalAgreement = new RentalAgreement();
@@ -154,14 +209,18 @@ public class RentalAgreementTest {
         } catch (IllegalStateException e) {
             Assertions.fail("Failing test! The rental agreement has not been completed as expected.");
         }
-
+        // Define the expected values.
+        // Five days after 7/2/2015 is 7/7/2015.
         LocalDate expectedDueDate = LocalDate.of(2015, 7, 7);
         // Only expecting 3 charge days here because
         int expectedChargeDays = 3;
+        // Daily charge for chainsaw is 1.49, so (1.49 * 3) = 4.47
         double expectedPreDiscountCharge = 4.47;
         // Expecting 1.12 here as (4.47 * .25) = 1.1175 is rounded to 1.12
         double expectedDiscountAmount = 1.12;
+        // Expecting 3.35 here as (4.47 - 1.12) = 3.35
         double expectedFinalCharge = 3.35;
+        // Obtain the actual values from the finalized rental agreement.
         LocalDate actualDueDate = rentalAgreement.getDueDate();
         int actualChargeDays = rentalAgreement.getChargeDays();
         double actualPreDiscountCharge = rentalAgreement.getPreDiscountAmount();
@@ -175,6 +234,9 @@ public class RentalAgreementTest {
         Assertions.assertEquals(expectedFinalCharge, actualFinalCharge);
     }
 
+    /**
+     * Validates that the calculation for Test 4 in the specification is calculating as expected.
+     */
     @Test
     public void validateTest4() {
         RentalAgreement rentalAgreement = new RentalAgreement();
@@ -198,13 +260,16 @@ public class RentalAgreementTest {
         }
 
         LocalDate expectedDueDate = LocalDate.of(2015, 9, 9);
-        // Only expecting 3 charge days here because while July 3rd is an observed holiday,
-        // chainsaws are charged as a rental day on holidays, but not weekends.
+        // Only expecting 3 charge days as this date range includes labor day + weekend and jackhammers do not have
+        // a holiday charge nor a weekend charge.
         int expectedChargeDays = 3;
+        // Daily charge for jackhammers is 2.99, so (2.99 * 3) = 8.97
         double expectedPreDiscountCharge = 8.97;
+        // No discount applied.
         double expectedDiscountAmount = 0;
         // Since there is no discount applied, the final charge should be the same as the pre-discount amount.
-        double expectedFinalCharge = 8.97;
+        double expectedFinalCharge = expectedPreDiscountCharge;
+        // Obtain the actual values from the finalized rental agreement.
         LocalDate actualDueDate = rentalAgreement.getDueDate();
         int actualChargeDays = rentalAgreement.getChargeDays();
         double actualPreDiscountCharge = rentalAgreement.getPreDiscountAmount();
@@ -218,6 +283,9 @@ public class RentalAgreementTest {
         Assertions.assertEquals(expectedFinalCharge, actualFinalCharge);
     }
 
+    /**
+     * Validates that the calculation for Test 5 in the specification is calculating as expected.
+     */
     @Test
     public void validateTest5() {
         RentalAgreement rentalAgreement = new RentalAgreement();
@@ -239,15 +307,19 @@ public class RentalAgreementTest {
         } catch (IllegalStateException e) {
             Assertions.fail("Failing test! The rental agreement has not been completed as expected.");
         }
-
+        // Define the expected values.
+        // 9 days after 7/2/2015 is 7/11/2015
         LocalDate expectedDueDate = LocalDate.of(2015, 7, 11);
-        // Only expecting 3 charge days here because while July 3rd is an observed holiday,
-        // chainsaws are charged as a rental day on holidays, but not weekends.
+        // Only expecting 5 charge days as jackhammers only include weekday charges and the defined date range includes
+        // 3 weekend charges and one holiday charge.
         int expectedChargeDays = 5;
+        // Daily charge for jackhammers is 2.99, so (2.99 * 5) = 14.95
         double expectedPreDiscountCharge = 14.95;
+        // No discount applied
         double expectedDiscountAmount = 0;
         // Since there is no discount applied, the final charge should be the same as the pre-discount amount.
-        double expectedFinalCharge = 14.95;
+        double expectedFinalCharge = expectedPreDiscountCharge;
+        // Obtain the actual values from the finalized rental agreement.
         LocalDate actualDueDate = rentalAgreement.getDueDate();
         int actualChargeDays = rentalAgreement.getChargeDays();
         double actualPreDiscountCharge = rentalAgreement.getPreDiscountAmount();
@@ -261,6 +333,9 @@ public class RentalAgreementTest {
         Assertions.assertEquals(expectedFinalCharge, actualFinalCharge);
     }
 
+    /**
+     * Validates that the calculation for Test 6 in the specification is calculating as expected.
+     */
     @Test
     public void validateTest6() {
         RentalAgreement rentalAgreement = new RentalAgreement();
@@ -282,15 +357,19 @@ public class RentalAgreementTest {
         } catch (IllegalStateException e) {
             Assertions.fail("Failing test! The rental agreement has not been completed as expected.");
         }
-
+        // Define the expected values.
+        // Four days after 7/2/2020 is 7/6/2020.
         LocalDate expectedDueDate = LocalDate.of(2020, 7, 6);
-        // Only expecting 3 charge days here because while July 3rd is an observed holiday,
-        // chainsaws are charged as a rental day on holidays, but not weekends.
+        // Only expecting 1 charge day here as jackhammers only include weekday charges and the defined date range
+        // includes 2 weekend days and 1 holiday.
         int expectedChargeDays = 1;
+        // Daily charge for a jackhammer is 2.99, so (2.99 * 1) = 2.99.
         double expectedPreDiscountCharge = 2.99;
+        // Expecting 1.5 here because (2.99 * .5) = 1.495 which rounded up 1o 1.5
         double expectedDiscountAmount = 1.5;
-        // Since there is no discount applied, the final charge should be the same as the pre-discount amount.
+        // Expecting 1.49 here because (2.99 - 1.5) = 1.49
         double expectedFinalCharge = 1.49;
+        // Obtain the actual values from the finalized rental agreement.
         LocalDate actualDueDate = rentalAgreement.getDueDate();
         int actualChargeDays = rentalAgreement.getChargeDays();
         double actualPreDiscountCharge = rentalAgreement.getPreDiscountAmount();
@@ -303,5 +382,4 @@ public class RentalAgreementTest {
         Assertions.assertEquals(expectedDiscountAmount, actualDiscountAmount);
         Assertions.assertEquals(expectedFinalCharge, actualFinalCharge);
     }
-
 }
