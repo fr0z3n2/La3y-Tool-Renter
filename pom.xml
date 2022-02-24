@@ -9,8 +9,7 @@
   <version>1.0-SNAPSHOT</version>
 
   <name>ToolRenter</name>
-  <!-- TODO: Add GitHub Link -->
-  <url>http://www.example.com</url>
+  <url>https://github.com/fr0z3n2/ls0222</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
