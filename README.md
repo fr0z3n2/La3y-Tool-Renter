@@ -1,5 +1,5 @@
 # About The Project
-This Java project is a sample tool renting system called Tool Renter. The goal behind this application is to allow users that adopt this software to rent the available tools based on their tool code (`CHNS`, `LADW`, `JAKD`, `JAKR`).
+This Java project is a sample tool renting system called Tool Renter. The goal behind this application is to allow users that adopt this software to rent the available tools based on their tool code (`CHNS`, `LADW`, `JAKD`, `JAKR`). This was created to satisfy a company's interview requirement.
 
 ### Built With
 * [Java](https://openjdk.java.net/projects/jdk/17/)
